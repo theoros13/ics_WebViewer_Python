@@ -43,8 +43,7 @@ def index():
 def view(table, devices):
     error = []
     date_aff = []
-    data = []
-    date_end =""
+    date_end = ""
 
     for item in conf:
         if item.tablename == table:
@@ -54,8 +53,7 @@ def view(table, devices):
     info = dict(
         table=table,
         key=devices,
-        ylabel=ylabel,
-        now=datetime.datetime.now().date()
+        ylabel=ylabel
     )
 
     if request.method == 'POST':
@@ -74,7 +72,6 @@ def view(table, devices):
     if date_start > datetime.datetime.now().date():
         error.append("date start not yet passed ")
 
-    print(dates.str2astro(str(date_start)))
 
     try:
         query = db.dataBetween(table=table, cols=devices, start=str(date_start), end=str(date_end + datetime.timedelta(days=1)) if date_end else '')
@@ -108,7 +105,7 @@ def view(table, devices):
 
         legend_x = [str(date_start), str(date_end) if date_end != "" else str(datetime.datetime.now() - datetime.timedelta(hours=2))]
 
-        return render_template('view.html', error=error, graphjson=graphjson, legend_x=legend_x, info=info, date=datetime.datetime.now().date())
+        return render_template('view.html', error=error, graphjson=graphjson, legend_x=legend_x, info=info, date=datetime.datetime.now().date(), to_return=to_return)
 
 
 # page de qui actualise les dernier donné
