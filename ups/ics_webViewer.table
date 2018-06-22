@@ -1,0 +1,4 @@
+setupRequired(ics_sps_engineering_Lib_dataQuery)
+
+pathPrepend(PATH, ${PRODUCT_DIR}/bin)
+pathPrepend(PYTHONPATH, ${PRODUCT_DIR}/python)
