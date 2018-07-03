@@ -1,14 +1,43 @@
-.test{
-    display: none;
-    background-color: lightblue;
-    position: absolute;
-    z-index: 1000;
-    width: 1000px;
-    height: 500px;
-    left: 50%;
-    top: 50%;
-    margin-top: -250px;
-    margin-left: -500px;
-    box-shadow: 10px 10px 15px black;
-    border-radius: 5px;
+.datas{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+.title a{
+    text-decoration: none;
+    color: black;
+}
+
+.cameras{
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    display: block;
+}
+
+.line{
+    width: 100%;
+    display: block;
+    float: left;
+}
+
+.name, .mode, .donne{
+    border: 3px black solid;
+    text-align: center;
+    width: 120px;
+    height: 40px;
+    margin: 10px;
+    float: left;
+}
+
+.alert{
+    background-color: #f44b42;
+}
+.good{
+    background-color: #4df441;
+}
+
+.timeout{
+    background-color: #444444 !important;
+    color: white !important;
 }

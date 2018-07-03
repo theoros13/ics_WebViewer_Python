@@ -7,25 +7,27 @@ import plotly
 import datetime
 import pandas as pd
 import numpy as np
+import re
 from pprint import pprint
 
 # initialiasation de Flask
 app = Flask(__name__)
 
-# charge la configuration
+#charge la configuration
 conf = confighandler.loadConf()
-# charge la configuration des alarmes
-conf_alarm = confighandler.loadAlarm()
-# time out
+# # time out
 conf_timeout = confighandler.readTimeout()
-# Read mode alarm
+# # Read mode alarm
 conf_readmode = confighandler.readMode()
 # connection a la base de donnée
 try:
+    db_alarm = databasemanager.DatabaseManager('localhost', 5432, 'alarmhandler')
     db = databasemanager.DatabaseManager('localhost', 5432)
     db.init()
+    db_alarm.init()
 except:
     raise Exception('connection to the database impossible')
+
 
 # si l'entête renvoye une erreur 404
 @app.errorhandler(404)
@@ -33,11 +35,91 @@ def error404(error):
     return render_template('page_not_found.html'), 404
 
 
-# page principal (index)
 @app.route("/")
 def index():
+    alarm = db_alarm.loadAlarms()
+    camera = []
+    enu = []
+    ait = []
+
+    for name in alarm:
+        datas = []
+        datess = []
+        tablenames = []
+        keys = []
+        labels = []
+        limits = []
+
+        mode = alarm[name].mode
+
+        for device in alarm[name].alarms:
+            if mode != 'offline':
+
+                data = db.last(table=device.tablename.lower(), cols=device.key)
+                date = dates.num2date(data['tai']).isoformat().replace('T', ' ')[:-13]
+                del data['id']
+                del data['tai']
+
+                if type(device.ubound) == str:
+                    device.ubound = device.ubound.replace('-', '')
+                if type(device.lbound) == str:
+                    device.lbound = device.lbound.replace('-', '')
+
+                datas.append(data[device.key])
+                datess.append(date)
+                tablenames.append(device.tablename)
+                keys.append(device.key)
+                labels.append(device.label)
+                limits.append([float(device.lbound), float(device.ubound)])
+
+        if re.match("\d", name[1]):
+            camera.append(
+                dict(
+                    mode=mode,
+                    name=name,
+                    table=tablenames,
+                    key=keys,
+                    label=labels,
+                    limit=limits,
+                    data=datas,
+                    date=datess
+                )
+            )
+
+        elif name[0] == 'e':
+            enu.append(
+                dict(
+                    mode=mode,
+                    name=name,
+                    table=tablenames,
+                    key=keys,
+                    label=labels,
+                    limit=limits,
+                    data=datas,
+                    date=datess
+                )
+            )
+        else:
+            ait.append(
+                dict(
+                    mode=mode,
+                    name=name,
+                    table=tablenames,
+                    key=keys,
+                    label=labels,
+                    limit=limits,
+                    data=datas,
+                    date=datess
+                )
+            )
+    return render_template('index.html', cameras=camera, enus=enu, aits=ait)
+
+
+# page principal (index)
+@app.route("/see_all")
+def see_all():
     results = getAllLast()
-    return render_template('index.html', results=results)
+    return render_template('see_all.html', results=results)
 
 
 # page pour voir le graphique du la valeur demandé
@@ -122,24 +204,22 @@ def refresh_all():
         text += "<h3>" + item + "</h3>"
         for device in results[0][item]:
             text += "<ul>"
-            if filter_timeouts(device['table_name']) is True:
-                text += "<li class=\"Timeout\">" + device['label_device'] + " (" + device['date'] + ") " + filter_dates(device['date']) + "</li>"
-            else:
-                text += "<li>" + device['label_device'] + " (" + device['date'] + ") " + filter_dates(device['date']) + "</li>"
+            text += "<li class=\"" + filter_timeouts(device['table_name']) +"\">" + device['label_device'] + " (" + device['date'] + ") " + filter_dates(device['date']) + "</li>"
             text += "<ul>"
             for idx, keys in enumerate(device['label_keys']):
-                key = keys
+                key = device['key'][idx]
                 data = device['datas'][idx]
-                if filter_alarms(device['table_name'], key, data)[0] is True:
-                    if filter_alarms(device['table_name'], key, data)[1] is True:
-                        text += "<li class =\"Alert_launch\"><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + key + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + " </li>"
+                alarm = filter_alarms(device['table_name'], key, data)
+                if alarm[0] is True:
+                    if alarm[1] is True:
+                        text += "<li class =\"Alert_launch\"><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + keys + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + " </li>"
                     else:
-                        text += "<li class =\"Alert_act\"><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + key + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + "</li>"
+                        text += "<li class =\"Alert_act\"><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + keys + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + " </li>"
                 else:
                     if filter_ranges(data, device['range']) is True:
-                        text += "<li class =\"error\"><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + key + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + " &#9888; </li>"
+                        text += "<li class =\"error\"><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + keys + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + " &#9888; </li>"
                     else:
-                        text += "<li><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + key + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + " </li>"
+                        text += "<li><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + keys + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + " </li>"
             text += "</ul>"
             text += "</ul>"
         text += "</div>"
@@ -229,7 +309,7 @@ def getAllLast():
 def filter_readmodes(name):
     operation = True
 
-    if conf_readmode[name] != 'operation':
+    if conf_readmode[name] == 'offline':
         operation = False
 
     return operation
@@ -237,13 +317,12 @@ def filter_readmodes(name):
 
 # lit les time out dans le fichier de configuration de retourne true si le device a un time out
 def filter_timeouts(table):
-    stop = False
 
     for item in conf_timeout:
         if item == table:
-            stop = True
+            return 'timeout'
 
-    return stop
+    return ''
 
 
 # compare la date de la dernier valeur à c'elle de maintenant pour voir si la valeur est a jour
@@ -267,15 +346,20 @@ def filter_ranges(data, range):
 
 # lit le fichier de configuaration et retourne find à true il a une alarme et error à true si l'alarme est activé
 def filter_alarms(table, key, data):
+    conf_alarm = db_alarm.loadAlarms()
     find = False
     error = False
-    i = 0
-    while find is False and i < len(conf_alarm):
-        if conf_alarm[i].tablename == table and conf_alarm[i].key == key:
-            find = True
-            if float(conf_alarm[i].ubound) < data or float(conf_alarm[i].lbound) > data:
-                error = True
-        i = i + 1
+    for name in conf_alarm:
+        for device in conf_alarm[name].alarms:
+            if table == device.tablename.lower() and key == device.key:
+                find = True
+                if type(device.ubound) == str:
+                    device.ubound = device.ubound.replace('-', '')
+                if type(device.lbound) == str:
+                    device.lbound = device.lbound.replace('-', '')
+
+                if data < float(device.lbound) or data > float(device.ubound):
+                    error = True
 
     return find, error
 

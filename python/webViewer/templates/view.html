@@ -12,8 +12,6 @@
                 </div>
             {% endfor %}
 
-            {% if error[0] != "date pas encore passé" %}
-
 
                     <div id="graph"></div>
 
@@ -23,15 +21,25 @@
                             var go_refresh = false;
                             var today = new Date();
                             if ( (today.getMonth()+1) < 10 ){
-                                today = today.getFullYear()+"-0"+(today.getMonth()+1)+"-"+today.getDate();
+                                if( today.getDate() < 10 ) {
+                                    today = today.getFullYear()+"-0"+(today.getMonth()+1)+"-0"+today.getDate();
+                                }else{
+                                    today = today.getFullYear()+"-0"+(today.getMonth()+1)+"-"+today.getDate();
+                                }
                             }else{
-                                today = today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate();
+                                if( today.getDate() < 10 ) {
+                                    today = today.getFullYear()+"-"+(today.getMonth()+1)+"-0"+today.getDate();
+                                }else{
+                                    today = today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate();
+                                }
                             }
-
 
                             if ( today == "{{ legend_x[1].split(' ')[0] }}" ){
                                 go_refresh = true;
+
                             }
+
+                            console.log(today, "{{ legend_x[1].split(' ')[0] }}" );
 
                             Plotly.plot('graph',
                                         graphs[0].data,
@@ -69,7 +77,6 @@
                               };
 
                         </script>
-                {% endif %}
         <center><form action="{{ url_for('view', table=info.table, devices=info.key) }}" class="from_date" method="POST">
             <label>Date start</label><br><br>
                 <select name="day_start" id="day_start">

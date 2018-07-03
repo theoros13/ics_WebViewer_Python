@@ -3,7 +3,7 @@ body{
     margin: 0;
     padding: 0;
     font-size: 15px;
-    background-color:#f7ede6;
+    background-color:white;
 }
 
 /* css pour page index */
@@ -44,7 +44,7 @@ table{
 /* css changer de couleur */
 .view_change_color{
     display: none;
-    background-color: #f7ede6;
+    background-color: white;
     position: absolute;
     z-index: 1000;
     width: 500px;

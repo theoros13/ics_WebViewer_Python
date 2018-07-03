@@ -1,8 +1,8 @@
 {% extends 'default.html' %}
 
 {% block content %}
-<a href="{{ url_for('index') }}">see the main infoarmation</a>
-    <p><span class="error">Out of range</span> | <span class="Timeout">Time out</span> | <span class="offline">Offline</span> | <span class="Alert_act">Alert activate</span> | <span class="Alert_launch">Alert launch</span> |
+<a href="{{ url_for('index') }}">see the main information</a>
+    <p><span class="error">Out of range</span> | <span class="timeout">Time out</span> | <span class="offline">Offline</span> | <span class="Alert_act">Alert activate</span> | <span class="Alert_launch">Alert launch</span> |
         <a href="" id="change_color">Change colors</a></p>
 
 <div class="donne">
@@ -17,29 +17,25 @@
         {% for device in results[0][item] %}
 
         <ul>
-            {% if filter_timeout(device.table_name) == True %}
-                <li class="Timeout">{{ device.label_device }} ({{ device.date }}) {{ filter_date(device.date) }} </li>
-            {% else %}
-                <li>{{ device.label_device }} ({{ device.date }}) {{ filter_date(device.date) }}</li>
-            {% endif %}
+                <li class="{{filter_timeout(device.table_name)}}">{{ device.label_device }} ({{ device.date }}) {{ filter_date(device.date) }} </li>
             <ul>
                 {% for keys in device.label_keys %}
                         {% set key = device.key[loop.index0] %}
                         {% set data = device.datas[loop.index0] %}
-
-                        {#{% if filter_alarm(device.table_name, key, data)[0] == True %}
-                            {% if filter_alarm(device.table_name, key, data)[1] == True %}
+                        {% set alarm = filter_alarm(device.table_name, key, data) %}
+                    {% if alarm[0] == True %}
+                            {% if alarm[1] == True %}
                                 <li class="Alert_launch"><a href="{{ url_for('view', table=device.table_name, devices=device.key[loop.index0]) }}">{{ keys }}</a> : {{ data }} {{ device.units[loop.index0] }}</li>
                             {% else %}
                                 <li class="Alert_act"><a href="{{ url_for('view', table=device.table_name, devices=device.key[loop.index0]) }}">{{ keys }}</a> : {{ data }} {{ device.units[loop.index0] }}</li>
                             {% endif %}
-                        {% else %} #}
+                        {% else %}
                             {% if filter_range(data, device.range) == True %}
                                 <li class="error"><a href="{{ url_for('view', table=device.table_name, devices=device.key[loop.index0]) }}">{{ keys }}</a> : {{ data }} {{ device.units[loop.index0] }} &#9888;</li>
                             {% else %}
                                 <li><a href="{{ url_for('view', table=device.table_name, devices=device.key[loop.index0]) }}">{{ keys }}</a> : {{ data }} {{ device.units[loop.index0] }}  </li>
                             {% endif %}
-                       {# {% endif %} #}
+                    {% endif %}
                 {% endfor %}
             </ul>
         </ul>
@@ -56,15 +52,15 @@
 
     <form action="">
         <label for="error">Out of range --> </label>
-        <input type="color" id="error" value="#f44b42"><br><br>
+        <input type="color" id="error" value="#2e84c1"><br><br>
         <label for="Timeout">Time out --> </label>
-        <input type="color" id="Timeout" value="#969696"><br><br>
+        <input type="color" id="timeout" value="#969696"><br><br>
         <label for="offline">Offline --> </label>
-        <input type="color" id="offline" value="#F7EDE6"><br><br>
+        <input type="color" id="offline" value="#FFFFFF"><br><br>
         <label for="Alert_act">Alert activate --> </label>
         <input type="color" id="Alert_act" value="#4df441"><br><br>
         <label for="Alert_launch">Alert launch --> </label>
-        <input type="color" id="Alert_launch" value="#2e84c1"><br><br><br>
+        <input type="color" id="Alert_launch" value="#f44b42"><br><br><br>
         <input type="submit" id="valider">
     </form>
 </div>
@@ -79,13 +75,13 @@
 
         function setColor(){
             var error = $("#error").val();
-            var Timeout = $("#Timeout").val();
+            var timeout = $("#timeout").val();
             var offline = $("#offline").val();
             var Alert_act = $("#Alert_act").val();
             var Alert_launch = $("#Alert_launch").val();
 
             $(".error").css('background-color', error);
-            $(".Timeout").css('background-color', Timeout);
+            $(".timeout").css('background-color', timeout);
             $(".offline").css('background-color', offline);
             $(".offline").css('opacity', '0.5');
             $(".Alert_act").css('background-color', Alert_act);
