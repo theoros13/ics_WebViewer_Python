@@ -13,18 +13,22 @@ from pprint import pprint
 # initialiasation de Flask
 app = Flask(__name__)
 
-#charge la configuration
+# charge la configuration
 conf = confighandler.loadConf()
-# # time out
+# time out
 conf_timeout = confighandler.readTimeout()
-# # Read mode alarm
-conf_readmode = confighandler.readMode()
+# Read mode alarm
+# conf_readmode = confighandler.readMode()
 # connection a la base de donnée
 try:
+    # connection base pour les alarmes pour la page main
     db_alarm = databasemanager.DatabaseManager('localhost', 5432, 'alarmhandler')
+    # connection pour les donées
     db = databasemanager.DatabaseManager('localhost', 5432)
+    # initialisation
     db.init()
     db_alarm.init()
+    conf_readmode = db_alarm.loadMode()
 except:
     raise Exception('connection to the database impossible')
 
@@ -35,6 +39,7 @@ def error404(error):
     return render_template('page_not_found.html'), 404
 
 
+# index
 @app.route("/")
 def index():
     alarm = db_alarm.loadAlarms()
@@ -155,6 +160,7 @@ def view(table, devices):
     if date_start > datetime.datetime.now().date():
         error.append("date start not yet passed")
 
+
     try:
         query = db.dataBetween(table=table, cols=devices, start=str(date_start), end=str(date_end + datetime.timedelta(days=1)) if date_end else '')
     except:
@@ -197,14 +203,11 @@ def refresh_all():
     text = ""
 
     for item in results[0]:
-        if filter_readmodes(item) is True:
-            text += "<div class=\"" + item + "\">"
-        else:
-            text += "<div class=\"" + item + " offline\">"
+        text += "<div class=\"" + item + " " + filter_readmodes(item) + "\">"
         text += "<h3>" + item + "</h3>"
         for device in results[0][item]:
             text += "<ul>"
-            text += "<li class=\"" + filter_timeouts(device['table_name']) +"\">" + device['label_device'] + " (" + device['date'] + ") " + filter_dates(device['date']) + "</li>"
+            text += "<li><span  class=\"" + filter_timeouts(device['table_name']) +"\" >" + device['label_device'] + " (" + device['date'] + ") " + filter_dates(device['date']) + "</span></li>"
             text += "<ul>"
             for idx, keys in enumerate(device['label_keys']):
                 key = device['key'][idx]
@@ -212,12 +215,12 @@ def refresh_all():
                 alarm = filter_alarms(device['table_name'], key, data)
                 if alarm[0] is True:
                     if alarm[1] is True:
-                        text += "<li class =\"Alert_launch\"><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + keys + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + " </li>"
+                        text += "<li><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + keys + "</a > : <span class =\"Alert_launch\">" + str(np.float64(data).item()) + " " + device['units'][idx] + " </span> </li>"
                     else:
-                        text += "<li class =\"Alert_act\"><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + keys + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + " </li>"
+                        text += "<li><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + keys + "</a > : <span class=\"Alert_act\">" + str(np.float64(data).item()) + " " + device['units'][idx] + "</span> </li>"
                 else:
                     if filter_ranges(data, device['range']) is True:
-                        text += "<li class =\"error\"><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + keys + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + " &#9888; </li>"
+                        text += "<li><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + keys + "</a > : <span class=\"error\">" + str(np.float64(data).item()) + " " + device['units'][idx] + " &#9888; </span> </li>"
                     else:
                         text += "<li><a href=\"view/" + device['table_name'] + "/" + device['key'][idx] + " \">" + keys + "</a > : " + str(np.float64(data).item()) + " " + device['units'][idx] + " </li>"
             text += "</ul>"
@@ -306,13 +309,22 @@ def getAllLast():
 
 # filtre
 # lit le readmode dans le fichier de configuration et retourne false si le device n'est pas en operation
-def filter_readmodes(name):
-    operation = True
+def filter_readmodes(actor_name):
+    conf_readmode =db_alarm.loadMode()
+    res = {}
+    name2actors = {'b1': ['ccd_b1', 'xcu_b1'],
+                   'r1': ['ccd_r1', 'xcu_r1'],
+                    'cleanroom':['aitroom'],
+                    'watercooling':['aitroom']}
 
-    if conf_readmode[name] == 'offline':
-        operation = False
-
-    return operation
+    for name, mode in conf_readmode.items():
+        try:
+            actors = name2actors[name]
+            for actor in actors:
+                res[actor] = mode
+        except KeyError:
+            pass
+    return res[actor_name]
 
 
 # lit les time out dans le fichier de configuration de retourne true si le device a un time out
@@ -358,7 +370,7 @@ def filter_alarms(table, key, data):
                 if type(device.lbound) == str:
                     device.lbound = device.lbound.replace('-', '')
 
-                if data < float(device.lbound) or data > float(device.ubound):
+                if data < float(device.lbound) or data >= float(device.ubound):
                     error = True
 
     return find, error
