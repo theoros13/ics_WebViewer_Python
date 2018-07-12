@@ -1,17 +1,73 @@
 body{
-    font-family: Arial;
     margin: 0;
     padding: 0;
     font-size: 15px;
     background-color:white;
+    font-family: 'Roboto', sans-serif;
 }
 
-/* css pour page index */
-.donne{
+.nav_bar{
+    position: relative;
+    width: 1fr;
+    height: 50px;
+    background-color: #3b3c3d;
+}
+
+.nav_bar_contante {
+    width: 100%;
+    float: left;
+    position: absolute;
+    margin-top: 15px;
+}
+
+.nav_bar_contante a{
+    color: white;
+    text-decoration: none;
+}
+
+.nav_bar_home {
+    width: 175px;
+    margin-left: 15px;
+    float: left;
+}
+
+.nav_bar_color {
+    margin: -15px 15px 0 0;
+    width: 535px;
+    height: 50px;
+    float: right;
+    right: 0;
+}
+
+span{
+    border-radius: 3px;
+    padding: 2px;
+}
+
+/* css pour page see_all */
+
+.name_color{
+    display: inline;
+}
+
+.donnes{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-gap: 5px;
     grid-template-areas: "red blue aitroom";
+}
+
+.xcu_r1{
+    grid-area: red;
+
+}
+
+.xcu_b1{
+    grid-area: blue;
+}
+
+.aitroom{
+    grid-area: aitroom;
 }
 
 a{
@@ -19,26 +75,13 @@ a{
     color: black;
 }
 
-.xcu_r1{
-    grid-area: red;
-
-    border: 2px red solid;
-
-}
-
-.xcu_b1{
-    grid-area: blue;
-    border: 2px blue solid;
-}
-
-.aitroom{
-    grid-area: aitroom;
-    border: 2px black solid;
-}
-
 table{
     background-color: #c5d4ff;
     text-align: center;
+}
+
+li {
+    list-style: none;
 }
 
 /* css changer de couleur */
@@ -87,4 +130,271 @@ table{
     padding-left: 20px;
     padding-top: 15px;
     background-color: red;
+}
+
+/* css pour page index */
+.datas{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+.title a{
+    text-decoration: none;
+    color: black;
+}
+
+.cameras{
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    display: block;
+}
+
+.line{
+    width: 100%;
+    display: block;
+    float: left;
+}
+
+.name, .mode, .donne{
+    border: 3px #3b3c3d solid;
+    text-align: center;
+    width: 120px;
+    height: 40px;
+    margin: 10px;
+    float: left;
+}
+
+.alert{
+    background-color: #f44b42;
+}
+.good{
+    background-color: #4df441;
+}
+
+.line .timeout{
+    background-color: #444444 !important;
+    color: white !important;
+}
+
+.line .timeout a {
+    color: white !important;
+}
+
+
+
+/* Resposive */
+@media only screen and (max-width: 420px) {
+    body {
+        font-size: 13px;
+    }
+
+    .name_color{
+        display: none;
+    }
+
+    .nav_bar_color {
+        text-align: right;
+        width: 100px;
+    }
+
+    /* page see_all */
+    .donnes{
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-gap: 5px;
+        grid-template-areas: "red"
+                             "blue"
+                             "aitroom";
+        justify-items: center;
+    }
+
+    .xcu_r1{
+        grid-area: red;
+
+    }
+
+    .xcu_b1{
+        grid-area: blue;
+    }
+
+    .aitroom{
+        grid-area: aitroom;
+    }
+
+    /* page index */
+    .name, .mode, .donne{
+        font-size: 8px;
+        border: 1.5px #3b3c3d solid;
+        text-align: center;
+        width: 55px;
+        height: 20px;
+        margin: 5px;
+        float: left;
+    }
+
+    .datas{
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .cameras, .enu{
+        border-bottom: 2px black solid;
+    }
+
+    /* css changer de couleur */
+    .view_change_color{
+        width: 200px;
+        height: 400px;
+        margin-top: -200px;
+        margin-left: -100px;
+    }
+}
+
+@media only screen and (max-width: 825px) and (min-width: 421px){
+    body {
+        font-size: 13px;
+    }
+
+    .name_color{
+        display: none;
+    }
+
+    .nav_bar_color {
+        text-align: right;
+        width: 100px;
+    }
+
+    /* page see_all */
+    .donnes{
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-gap: 5px;
+        grid-template-areas: "red"
+                             "blue"
+                             "aitroom";
+        justify-items: center;
+    }
+
+    .xcu_r1{
+        grid-area: red;
+
+    }
+
+    .xcu_b1{
+        grid-area: blue;
+    }
+
+    .aitroom{
+        grid-area: aitroom;
+    }
+    /* page index */
+    .name, .mode, .donne{
+        border: 1.5px #3b3c3d solid;
+        text-align: center;
+        width: 60px;
+        height: 25px;
+        margin: 5px;
+        float: left;
+        font-size: 11px;
+    }
+
+    .datas{
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .cameras, .enu{
+        border-bottom: 2px black solid;
+    }
+
+    /* css changer de couleur */
+    .view_change_color{
+        width: 200px;
+        height: 400px;
+        margin-top: -200px;
+        margin-left: -100px;
+    }
+}
+
+@media only screen and (max-width: 1000px) and (min-width: 826px) {
+    body {
+        font-size: 13px;
+    }
+
+    .name_color{
+        display: none;
+    }
+
+    .nav_bar_color {
+        text-align: right;
+        width: 100px;
+    }
+
+    /* page see_all */
+    .donnes{
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-gap: 5px;
+        grid-template-areas: "red"
+                             "blue"
+                             "aitroom";
+        justify-items: center;
+    }
+
+    .xcu_r1{
+        grid-area: red;
+
+    }
+
+    .xcu_b1{
+        grid-area: blue;
+    }
+
+    .aitroom{
+        grid-area: aitroom;
+    }
+    /* page index */
+    .name, .mode, .donne{
+        border: 1.5px #3b3c3d solid;
+        text-align: center;
+        width: 70px;
+        height: 30px;
+        margin: 5px;
+        float: left;
+        font-size: 12
+    }
+
+    .nav_bar {
+        font-size: 15px;
+    }
+
+    /* css changer de couleur */
+    .view_change_color{
+        width: 400px;
+        height: 400px;
+        margin-top: -200px;
+        margin-left: -200px;
+    }
+
+}
+
+
+@media only screen and (max-width: 1460px) and (min-width: 1000px) {
+    body {
+        font-size: 13px;
+    }
+    .name, .mode, .donne{
+        border: 2px #3b3c3d solid;
+        text-align: center;
+        width: 80px;
+        height: 35px;
+        margin: 8px;
+        float: left;
+        font-size: 13px
+    }
+
+    .nav_bar {
+        font-size: 15px;
+    }
 }
