@@ -41,3 +41,7 @@
     background-color: #444444 !important;
     color: white !important;
 }
+
+.timeout a {
+    color: white !important;
+}
