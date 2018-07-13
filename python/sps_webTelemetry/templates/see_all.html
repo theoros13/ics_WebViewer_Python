@@ -21,7 +21,7 @@
         {% for device in results[0][item] %}
 
         <ul>
-                <li><span class="{{filtercd_timeout(device.table_name)}}">{{ device.label_device }} ({{ device.date }}) {{ filter_date(device.date) }} </span></li>
+                <li><span class="{{filter_timeout(device.table_name)}}">{{ device.label_device }} ({{ device.date }}) {{ filter_date(device.date) }} </span></li>
             <ul>
                 {% for keys in device.label_keys %}
                         {% set key = device.key[loop.index0] %}

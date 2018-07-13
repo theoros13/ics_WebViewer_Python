@@ -33,15 +33,22 @@ except:
     raise Exception('connection to the database impossible')
 
 
-# si l'entête renvoye une erreur 404
 @app.errorhandler(404)
 def error404(error):
+    """
+        function if the url is not defined
+        :param error:
+        :return: templates > page_not_found.htlm
+        """
     return render_template('page_not_found.html'), 404
 
 
-# index
 @app.route("/")
 def index():
+    """
+    show the most importante information
+    :return: templates > index.html, camera, enu, ait
+    """
     alarm = db_alarm.loadAlarms()
     camera = []
     enu = []
@@ -120,16 +127,25 @@ def index():
     return render_template('index.html', cameras=camera, enus=enu, aits=ait)
 
 
-# page principal (index)
 @app.route("/see_all")
 def see_all():
+    """
+    principal page
+    show all devices and the information of this
+    :return: templates > see_all.html, results
+    """
     results = getAllLast()
     return render_template('see_all.html', results=results)
 
 
-# page pour voir le graphique du la valeur demandé
 @app.route("/view/<string:table>/<string:devices>", methods=['GET', 'POST'])
 def view(table, devices):
+    """
+    show the plot of the devices selected
+    :param table:
+    :param devices:
+    :return: templates > view.html, error, graphjson, legend_x, info, date of today
+    """
     error = []
     date_aff = []
     date_end = ""
@@ -177,7 +193,7 @@ def view(table, devices):
         del query['tai']
         data = query[devices]
 
-        # donnée pour le graph
+        # data to the graph
         graphs = [
             dict(
                 data=[
@@ -196,9 +212,12 @@ def view(table, devices):
         return render_template('view.html', error=error, graphjson=graphjson, legend_x=legend_x, info=info, date=datetime.datetime.now().date())
 
 
-# page de qui actualise les dernier donné
 @app.route("/refresh_all")
 def refresh_all():
+    """
+    refresh the page see_all
+    :return: text (html code)
+    """
     results = getAllLast()
     text = ""
 
@@ -230,9 +249,12 @@ def refresh_all():
     return text
 
 
-# page qui actualise le graph (AJAX)
 @app.route("/refreshGraph")
 def res():
+    """
+    get the last value of the devices show in the plot
+    :return: donne, date
+    """
     a = request.args.get('a')
     b = request.args.get('b')
 
@@ -247,8 +269,11 @@ def res():
     return jsonify(result=donne, date=date)
 
 
-# recupere toutes les dernieres données
 def getAllLast():
+    """
+    get the last value of all devices
+    :return: results
+    """
     result_blue = []
     result_red = []
     result_ait = []
@@ -308,8 +333,12 @@ def getAllLast():
 
 
 # filtre
-# lit le readmode dans le fichier de configuration et retourne false si le device n'est pas en operation
 def filter_readmodes(actor_name):
+    """
+    get the mode of the actor
+    :param actor_name:
+    :return: the mode of the actor
+    """
     conf_readmode =db_alarm.loadMode()
     res = {}
     name2actors = {'b1': ['ccd_b1', 'xcu_b1'],
@@ -327,9 +356,12 @@ def filter_readmodes(actor_name):
     return res[actor_name]
 
 
-# lit les time out dans le fichier de configuration de retourne true si le device a un time out
 def filter_timeouts(table):
-
+    """
+    see if the table has a timeout
+    :param table:
+    :return: 'timeout' if the table has a timeout or nothing
+    """
     for item in conf_timeout:
         if item == table:
             return 'timeout'
@@ -337,8 +369,12 @@ def filter_timeouts(table):
     return ''
 
 
-# compare la date de la dernier valeur à c'elle de maintenant pour voir si la valeur est a jour
 def filter_dates(date):
+    """
+    see if the date send is today
+    :param date:
+    :return: if the date is not same today return "Value not update" else nothing
+    """
     dates = date[:-9].split('-')
     date = datetime.datetime(int(dates[0]), int(dates[1]), int(dates[2])).date()
     if date < datetime.datetime.now().date():
@@ -347,8 +383,13 @@ def filter_dates(date):
         return ""
 
 
-# lit les limites du device dans le fichier de configuration et retourne true si le donne est pas entre c'est valeur
 def filter_ranges(data, range):
+    """
+    check if the data is in good range
+    :param data:
+    :param range:
+    :return: true if is not good and false if is good
+    """
     range = range[0].split(';')
     if data < float(range[0]) or data > float(range[1]):
         return True
@@ -356,8 +397,15 @@ def filter_ranges(data, range):
         return False
 
 
-# lit le fichier de configuaration et retourne find à true il a une alarme et error à true si l'alarme est activé
 def filter_alarms(table, key, data):
+    """
+    see if the devices has an alarm
+    :param table:
+    :param key:
+    :param data:
+    :return: find : true if he has an alarm or false if he has not an alarm
+            error : true if the alarm is launch
+    """
     conf_alarm = db_alarm.loadAlarms()
     find = False
     error = False
@@ -376,9 +424,12 @@ def filter_alarms(table, key, data):
     return find, error
 
 
-# filtre utiliser dans le code html
 @app.context_processor
 def utility_processor():
+    """
+    filter utils in the hmtl code
+    :return: filter_alarm, filter_range, filter_timeout, filter_readmode, filter_date
+    """
     def filter_alarm(table, key, data):
         return filter_alarms(table, key, data)
 
@@ -402,6 +453,6 @@ def test():
     return render_template('test.html')
 
 
-# lance l'application
+# launch the server
 if __name__ == '__main__':
     app.run(threaded=True)
